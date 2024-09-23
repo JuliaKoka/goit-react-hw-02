@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import Description from "../Description/Description";
 import Feedback from "../Feedback/Feedback";
@@ -8,10 +8,11 @@ import Notification from "../Notification/Notification";
 import css from "./App.module.css";
 
 function App() {
-  const [reviewsState, setReviewsState] = useState({
-    good: 0,
-    neutral: 0,
-    bad: 0,
+  const [reviewsState, setReviewsState] = useState(() => {
+    const savedRating = window.localStorage.getItem("reviews-state");
+    return savedRating !== null
+      ? JSON.parse(savedRating)
+      : { good: 0, neutral: 0, bad: 0 };
   });
 
   const totalFeedback =
@@ -30,25 +31,31 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    window.localStorage.setItem("reviews-state", JSON.stringify(reviewsState));
+  }, [reviewsState]);
+
   return (
-    <div>
+    <div className={css.container}>
       <Description
         name="Sip Happens Café"
         text=" Please leave your feedback about our service by selecting one of the
         options below."
       />
-      <Options buttonName="Good" onUpdate={() => updateFeedback("Good")} />
-      <Options
-        buttonName="Neutral"
-        onUpdate={() => updateFeedback("Neutral")}
-      />
-      <Options buttonName="Bad" onUpdate={() => updateFeedback("Bad")} />
-      {totalFeedback > 0 && (
+      <div className={css.buttonsContainer}>
+        <Options buttonName="Good" onUpdate={() => updateFeedback("Good")} />
         <Options
-          buttonName="Reset"
-          onUpdate={() => setReviewsState({ good: 0, bad: 0, neutral: 0 })}
+          buttonName="Neutral"
+          onUpdate={() => updateFeedback("Neutral")}
         />
-      )}
+        <Options buttonName="Bad" onUpdate={() => updateFeedback("Bad")} />
+        {totalFeedback > 0 && (
+          <Options
+            buttonName="Reset"
+            onUpdate={() => setReviewsState({ good: 0, bad: 0, neutral: 0 })}
+          />
+        )}
+      </div>
       {totalFeedback === 0 ? (
         <Notification />
       ) : (
@@ -56,6 +63,13 @@ function App() {
           <Feedback feedbackType="Good" ratingValue={reviewsState.good} />
           <Feedback feedbackType="Neutral" ratingValue={reviewsState.neutral} />
           <Feedback feedbackType="Bad" ratingValue={reviewsState.bad} />
+          <Feedback feedbackType="Total" ratingValue={totalFeedback} />
+          <Feedback
+            feedbackType="Positive"
+            ratingValue={
+              Math.round((reviewsState.good / totalFeedback) * 100) + "%"
+            }
+          />
         </div>
       )}
     </div>
