@@ -1,9 +1,7 @@
 import css from "./Options.module.css";
 
-export default function Options({ name }) {
-  return (
-    <div>
-      <button>{name}</button>
-    </div>
-  );
+import { useState } from "react";
+
+export default function Options({ buttonName, onUpdate }) {
+  return <button onClick={onUpdate}>{buttonName}</button>;
 }

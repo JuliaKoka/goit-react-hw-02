@@ -1,12 +1,9 @@
 import css from "./Feedback.module.css";
 
-export default function Feedback() {
+export default function Feedback({ feedbackType, ratingValue }) {
   return (
-    <div>
-      <p>Feedback</p>
-      {/* <p>
-        {name}: {rating}
-      </p> */}
-    </div>
+    <p>
+      {feedbackType}: {ratingValue}
+    </p>
   );
 }
