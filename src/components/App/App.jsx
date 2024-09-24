@@ -7,7 +7,7 @@ import Notification from "../Notification/Notification";
 
 import css from "./App.module.css";
 
-function App() {
+export default function App() {
   const [reviewsState, setReviewsState] = useState(() => {
     const savedRating = window.localStorage.getItem("reviews-state");
     return savedRating !== null
@@ -15,21 +15,23 @@ function App() {
       : { good: 0, neutral: 0, bad: 0 };
   });
 
-  const totalFeedback =
-    reviewsState.good + reviewsState.neutral + reviewsState.bad;
+  const updateFeedback = (feedbackType) => {
+    setReviewsState({
+      ...reviewsState,
+      [feedbackType]: reviewsState[feedbackType] + 1,
+    });
 
-  const updateFeedback = (type) => {
-    if (type === "Good") {
+    if (feedbackType === "reset") {
       setReviewsState({
-        ...reviewsState,
-        good: reviewsState.good + 1,
+        good: 0,
+        neutral: 0,
+        bad: 0,
       });
-    } else if (type === "Bad") {
-      setReviewsState({ ...reviewsState, bad: reviewsState.bad + 1 });
-    } else if (type === "Neutral") {
-      setReviewsState({ ...reviewsState, neutral: reviewsState.neutral + 1 });
     }
   };
+
+  const totalFeedback =
+    reviewsState.good + reviewsState.neutral + reviewsState.bad;
 
   useEffect(() => {
     window.localStorage.setItem("reviews-state", JSON.stringify(reviewsState));
@@ -42,38 +44,24 @@ function App() {
         text=" Please leave your feedback about our service by selecting one of the
         options below."
       />
-      <div className={css.buttonsContainer}>
-        <Options buttonName="Good" onUpdate={() => updateFeedback("Good")} />
-        <Options
-          buttonName="Neutral"
-          onUpdate={() => updateFeedback("Neutral")}
-        />
-        <Options buttonName="Bad" onUpdate={() => updateFeedback("Bad")} />
-        {totalFeedback > 0 && (
-          <Options
-            buttonName="Reset"
-            onUpdate={() => setReviewsState({ good: 0, bad: 0, neutral: 0 })}
-          />
-        )}
-      </div>
+      <Options
+        goodButton="Good"
+        neutralButton="Neutral"
+        badButton="Bad"
+        onUpdate={updateFeedback}
+        totalFeedback={totalFeedback}
+      />
       {totalFeedback === 0 ? (
         <Notification />
       ) : (
-        <div>
-          <Feedback feedbackType="Good" ratingValue={reviewsState.good} />
-          <Feedback feedbackType="Neutral" ratingValue={reviewsState.neutral} />
-          <Feedback feedbackType="Bad" ratingValue={reviewsState.bad} />
-          <Feedback feedbackType="Total" ratingValue={totalFeedback} />
-          <Feedback
-            feedbackType="Positive"
-            ratingValue={
-              Math.round((reviewsState.good / totalFeedback) * 100) + "%"
-            }
-          />
-        </div>
+        <Feedback
+          good={reviewsState.good}
+          neutral={reviewsState.neutral}
+          bad={reviewsState.bad}
+          total={totalFeedback}
+          positive={Math.round((reviewsState.good / totalFeedback) * 100) + "%"}
+        />
       )}
     </div>
   );
 }
-
-export default App;
